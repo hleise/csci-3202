@@ -1,4 +1,9 @@
+# Hunter Leise
+# CSCI-3202 Lab 1
+
+
 # Class to represent the problem space
+# The starting state and capacity lists should be the same length
 class ProblemSpace:
     def __init__(self, _startingState, _capacity):
         self.start = _startingState
@@ -21,17 +26,23 @@ class ProblemSpace:
                 child2[0], child2[1] = child2[1], child2[0]
 
                 if (child not in visited) and (child2 not in visited):
-                    if child[2] == 2 and child[3] == 2:  # Check if goal state
-                        return path + [child]
-                    else:  # Append to front or back of stack depending on DFS or BFS
-                        stack.append((child, path + [child])) #DFS
-                        #stack.insert(0, (child, path + [child])) # BFS
-        return []
+                    # Slight optimization such that if a child already exists in the stack,
+                    # that must mean there's a faster way to get there, so skip it.
+                    if (not any(child in childPath for childPath in stack)) and \
+                       (not any(child2 in child2Path for child2Path in stack)):
+                        if child[2] == 2 and child[3] == 2:  # Check if goal state
+                            return path + [child]
+                        else:  # Append to front or back of stack depending on DFS or BFS
+                            stack.append((child, path + [child]))  # DFS
+                            # stack.insert(0, (child, path + [child])) # BFS
 
-    # Returns a list of children states for the given state
+        return []  # Returns an empty list if there is no solution
+
+    # Returns a list of child states for the given state
     def getChildren(self, state):
         children = []
 
+        # Loop through all possible 'to' and 'from' cups
         for cupFrom in range(0, len(state)):
             for cupTo in range(0, len(state)):
                 if (state[cupFrom] > 0) and (not self.isFull(state, cupTo)) and (cupFrom != cupTo):
@@ -53,6 +64,7 @@ class ProblemSpace:
     # Returns how much open space a cup has, given a state and the cup's index
     def getOpenSpace(self, state, index):
         return self.capacity[index] - state[index]
+
 
 problemSpace = ProblemSpace([40, 40, 0, 0], [40, 40, 5, 4])
 print(problemSpace.milkDFS())
