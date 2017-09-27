@@ -26,13 +26,14 @@ class ProblemSpace:
                 child2[0], child2[1] = child2[1], child2[0]
 
                 if (child not in visited) and (child2 not in visited):
-                    # Slight optimization such that if a child already exists in the stack,
-                    # that must mean there's a faster way to get there, so skip it.
+                    # Slight optimization such that if a child already exists
+                    # in the stack, that must mean there's a faster
+                    # way to get there, so skip it.
                     if (not any(child in childPath for childPath in stack)) and \
                        (not any(child2 in child2Path for child2Path in stack)):
                         if child[2] == 2 and child[3] == 2:  # Check if goal state
                             return path + [child]
-                        else:  # Append to front or back of stack depending on DFS or BFS
+                        else:
                             stack.append((child, path + [child]))  # DFS
                             # stack.insert(0, (child, path + [child])) # BFS
 
@@ -45,7 +46,9 @@ class ProblemSpace:
         # Loop through all possible 'to' and 'from' cups
         for cupFrom in range(0, len(state)):
             for cupTo in range(0, len(state)):
-                if (state[cupFrom] > 0) and (not self.isFull(state, cupTo)) and (cupFrom != cupTo):
+                if (state[cupFrom] > 0) and \
+                   (not self.isFull(state, cupTo)) and \
+                   (cupFrom != cupTo):
                     childState = state.copy()
                     if childState[cupFrom] > self.getOpenSpace(childState, cupTo):
                         childState[cupFrom] -= self.getOpenSpace(childState, cupTo)
