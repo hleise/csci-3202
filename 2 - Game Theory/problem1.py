@@ -1,8 +1,7 @@
 # Hunter Leise
 # CSCI-3202 Problem Set 2
+# Problem 1 (SIM Game)
 
-
-# Question 2.1
 
 class SimGraph:
     def __init__(self):
