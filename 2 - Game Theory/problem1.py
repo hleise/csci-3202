@@ -2,23 +2,24 @@
 # CSCI-3202 Problem Set 2
 # Problem 2.1 (SIM Game)
 
+import sys
+
 
 class SimGraph:
     def __init__(self):
-        self.graph = {
-            "a": [],
-            "b": [],
-            "c": [],
-            "d": [],
-            "e": [],
-            "f": [],
-            "g": [],
-            "h": []
-        }
+        self.graph = {"a": [], "b": [], "c": [], "d": [], "e": [], "f": [], "g": [], "h": []}
+        self.red_counter = {"a": 0, "b": 0, "c": 0, "d": 0, "e": 0, "f": 0, "g": 0, "h": 0}
+        self.blue_counter = {"a": 0, "b": 0, "c": 0, "d": 0, "e": 0, "f": 0, "g": 0, "h": 0}
 
     def add_edge(self, node1, node2, color):
         self.graph[node1].append((node2, color))
         self.graph[node2].append((node1, color))
+        if color == "red":
+            self.red_counter[node1] += 1
+            self.red_counter[node2] += 1
+        elif color == "blue":
+            self.blue_counter[node1] += 1
+            self.blue_counter[node2] += 1
 
     def is_edge_taken(self, node1, node2):
         for edge in self.graph[node1]:
@@ -57,8 +58,16 @@ class SimGame:
             move_color = "blue" if move_color == "red" else "red"
 
     def ai_move(self, color):
-        for node1 in self.graph.graph.keys():
-            for node2 in self.graph.graph.keys():
+        if color == "red":
+            min_list = sorted(self.graph.red_counter, key=self.graph.red_counter.get)
+        elif color == "blue":
+            min_list = sorted(self.graph.blue_counter, key=self.graph.blue_counter.get)
+        else:
+            print("Something went wrong")
+            sys.exit()
+
+        for node1 in min_list:
+            for node2 in min_list:
                 if self.is_valid_move(node1, node2):
                     self.graph.add_edge(node1, node2, color)
                     print("AI went from %s to %s" % (node1, node2))
