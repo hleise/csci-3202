@@ -1,6 +1,6 @@
 # Hunter Leise
 # CSCI-3202 Problem Set 2
-# Problem 1 (SIM Game)
+# Problem 2.1 (SIM Game)
 
 
 class SimGraph:
