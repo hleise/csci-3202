@@ -3,11 +3,15 @@
 # Problem 2.1 (SIM Game)
 
 import sys
+import copy
 
 
 class SimGraph:
-    def __init__(self):
-        self.graph = {"a": [], "b": [], "c": [], "d": [], "e": [], "f": [], "g": [], "h": []}
+    def __init__(self, graph=None):
+        if graph is None:
+            self.graph = {"a": [], "b": [], "c": [], "d": [], "e": [], "f": [], "g": [], "h": []}
+        else:
+            self.graph = graph
         self.red_counter = {"a": 0, "b": 0, "c": 0, "d": 0, "e": 0, "f": 0, "g": 0, "h": 0}
         self.blue_counter = {"a": 0, "b": 0, "c": 0, "d": 0, "e": 0, "f": 0, "g": 0, "h": 0}
 
@@ -36,7 +40,6 @@ class SimGraph:
                 if edge1[0] not in visited:
                     for edge2 in self.graph[edge1[0]]:
                         if edge2 in self.graph[node] and edge2[1] == edge1[1]:
-                            print(edge2[1] + " loses :(")
                             return True
         return False
 
@@ -47,32 +50,46 @@ class SimGame:
 
     def run_game(self):
         player_move = self.set_player()
-        move_color = "red"
+        move_color = "blue"
         while not self.graph.triangle_exists():
+            move_color = "red" if move_color == "blue" else "blue"
             if player_move:
                 self.move(move_color)
             else:
                 self.ai_move(move_color)
 
             player_move = not player_move
-            move_color = "blue" if move_color == "red" else "red"
+
+        print(move_color + " loses :(")
 
     def ai_move(self, color):
         if color == "red":
-            min_list = sorted(self.graph.red_counter, key=self.graph.red_counter.get)
-        elif color == "blue":
-            min_list = sorted(self.graph.blue_counter, key=self.graph.blue_counter.get)
+            cumulative_list = {key: self.graph.red_counter[key] +
+                               len(self.graph.graph[key])
+                               for key in self.graph.graph.keys()}
         else:
-            print("Something went wrong")
-            sys.exit()
+            cumulative_list = {key: self.graph.blue_counter[key] +
+                               len(self.graph.graph[key])
+                               for key in self.graph.graph.keys()}
+
+        min_list = sorted(cumulative_list, key=cumulative_list.get)
+        failing_move = ""
 
         for node1 in min_list:
             for node2 in min_list:
                 if self.is_valid_move(node1, node2):
-                    self.graph.add_edge(node1, node2, color)
-                    print("AI went from %s to %s" % (node1, node2))
-                    break
-            break
+                    new_graph = SimGraph(copy.deepcopy(self.graph.graph))
+                    new_graph.add_edge(node1, node2, color)
+                    if not new_graph.triangle_exists():
+                        self.graph.add_edge(node1, node2, color)
+                        print("AI went from %s to %s" % (node1, node2))
+                        return
+                    else:
+                        failing_move = node1 + node2
+
+        # Only make a losing move if you absolutely have to
+        self.graph.add_edge(failing_move[0], failing_move[1], color)
+        print("AI went from %s to %s" % (failing_move[0], failing_move[1]))
 
     def move(self, color):
         move = input(color + " move: ").lower()
