@@ -64,12 +64,12 @@ class SimGame:
 
     def ai_move(self, color):
         if color == "red":
-            cumulative_list = {key: self.graph.red_counter[key] +
-                               len(self.graph.graph[key])
+            cumulative_list = {key: self.graph.red_counter[key] * 1.5 -
+                               self.graph.blue_counter[key]
                                for key in self.graph.graph.keys()}
         else:
-            cumulative_list = {key: self.graph.blue_counter[key] +
-                               len(self.graph.graph[key])
+            cumulative_list = {key: self.graph.blue_counter[key] * 1.5 -
+                               self.graph.red_counter[key]
                                for key in self.graph.graph.keys()}
 
         min_list = sorted(cumulative_list, key=cumulative_list.get)
