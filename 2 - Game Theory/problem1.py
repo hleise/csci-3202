@@ -63,15 +63,16 @@ class SimGame:
         print(move_color + " loses :(")
 
     def ai_move(self, color):
-        if color == "red":
+        if color == "red":  # Create weighted list of features for red
             cumulative_list = {key: self.graph.red_counter[key] * 1.5 -
                                self.graph.blue_counter[key]
                                for key in self.graph.graph.keys()}
-        else:
+        else:  # Create weighted list of features for blue
             cumulative_list = {key: self.graph.blue_counter[key] * 1.5 -
                                self.graph.red_counter[key]
                                for key in self.graph.graph.keys()}
 
+        # Sort weighted feature list from min to max
         min_list = sorted(cumulative_list, key=cumulative_list.get)
         failing_move = ""
 
@@ -80,6 +81,8 @@ class SimGame:
                 if self.is_valid_move(node1, node2):
                     new_graph = SimGraph(copy.deepcopy(self.graph.graph))
                     new_graph.add_edge(node1, node2, color)
+
+                    # Check if this move would cause you to lose
                     if not new_graph.triangle_exists():
                         self.graph.add_edge(node1, node2, color)
                         print("AI went from %s to %s" % (node1, node2))
