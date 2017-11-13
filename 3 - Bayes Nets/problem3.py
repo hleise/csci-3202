@@ -41,7 +41,16 @@ class Question:
             return "Is %s == %s?" % (headers[self.attribute], str(self.value))
 
 
-# Returns the header array, cities array, and data array from the given csv file
+# Returns the number of cities with each label
+def label_count(cities):
+    num_labels = {'yes': 0, 'no': 0}
+    for city in cities:
+        label = city[-1]  # label is the last attribute
+        num_labels[label] += 1
+    return num_labels
+
+
+# Returns the headers, cities, and data from the given csv file
 def get_data_from_csv(filename):
     with open(filename, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -51,18 +60,10 @@ def get_data_from_csv(filename):
         for row in reader:
             cities.append(row['city'])
             data.append([row[headers[0]], row[headers[1]], row[headers[2]],
-                         row[headers[3]], int(row[headers[4]]), int(row[headers[5]]),
-                         float(row[headers[6]]), row[headers[7]]])
+                         row[headers[3]], int(row[headers[4]]),
+                         int(row[headers[5]]), float(row[headers[6]]),
+                         row[headers[7]]])
         return headers, cities, data
-
-
-# Returns the number of cities with each label
-def label_count(cities):
-    num_labels = {'yes': 0, 'no': 0}
-    for city in cities:
-        label = city[-1]  # label is the last attribute
-        num_labels[label] += 1
-    return num_labels
 
 
 # Check if the question is true for each given city
@@ -93,7 +94,8 @@ def entropy(cities, weight):
 def info_gain(left, right, current_uncertainty):
     weight_left = float(len(left)) / (len(left) + len(right))
     weight_right = float(len(right)) / (len(left) + len(right))
-    return current_uncertainty - (entropy(left, weight_left) + entropy(right, weight_right))
+    total_entropy = entropy(left, weight_left) + entropy(right, weight_right)
+    return current_uncertainty - total_entropy
 
 
 # Return the best question and its information gain
@@ -103,7 +105,7 @@ def get_best_question(cities):
     num_attributes = len(headers) - 1
 
     for attribute in range(0, num_attributes):
-        values = set([city[attribute] for city in cities])  # set so each value is unique
+        values = set([city[attribute] for city in cities])  # unique values
         for val in values:
             question = Question(attribute, val)
 
@@ -140,19 +142,20 @@ def build_tree(cities):
 def print_tree(node, spacing=""):
     # Base case: leaf node
     if isinstance(node, LeafNode):
-        print(spacing + "Predict", node.predictions)
+        prediction = max(node.predictions, key=node.predictions.get)
+        print(spacing + "Predict %s" % prediction)
         return
 
     # Print question
     print(spacing + str(node.question))
 
     # True branch
-    print(spacing + '--> True:')
-    print_tree(node.true_branch, spacing + "  ")
+    print(spacing + '  True:')
+    print_tree(node.true_branch, spacing + "    ")
 
     # False branch
-    print(spacing + '--> False:')
-    print_tree(node.false_branch, spacing + "  ")
+    print(spacing + '  False:')
+    print_tree(node.false_branch, spacing + "    ")
 
 
 # Classify a given city
@@ -177,7 +180,8 @@ def get_prediction(counts):
 
 if __name__ == '__main__':
     # Get data from training and test csv files
-    headers, training_cities, training_data = get_data_from_csv('trainingData.csv')
+    headers, training_cities, training_data = \
+        get_data_from_csv('trainingData.csv')
     _, test_cities, test_data = get_data_from_csv('testData.csv')
 
     # Use the classifier to build a tree
@@ -187,4 +191,5 @@ if __name__ == '__main__':
     # Predict the test cases
     for i in range(0, len(test_data)):
         print("City: %s. Actual: %s. Predicted: %s" %
-              (test_cities[i], test_data[i][-1], get_prediction(classify(test_data[i], tree))))
+              (test_cities[i], test_data[i][-1],
+               get_prediction(classify(test_data[i], tree))))
