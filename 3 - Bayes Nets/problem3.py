@@ -4,39 +4,33 @@
 
 import csv
 
-with open('trainingData.csv', newline='') as csvfile:
-    reader = csv.DictReader(csvfile)
-    header = reader.fieldnames[1:]
-    training_cities = []
-    training_data = []
 
-    for row in reader:
-        training_cities.append(row['city'])
-        training_data.append([row[header[0]], row[header[1]], row[header[2]],
-                              row[header[3]], int(row[header[4]]), int(row[header[5]]),
-                              float(row[header[6]]), row[header[7]]])
+# Returns the header array, cities array, and data array from the given csv file
+def get_data_from_csv(filename):
+    with open(filename, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        headers = reader.fieldnames[1:]
+        cities = []
+        data = []
 
+        for row in reader:
+            cities.append(row['city'])
+            data.append([row[headers[0]], row[headers[1]], row[headers[2]],
+                         row[headers[3]], int(row[headers[4]]), int(row[headers[5]]),
+                         float(row[headers[6]]), row[headers[7]]])
 
-def unique_vals(rows, col):
-    """Find the unique values for a column in a dataset."""
-    return set([row[col] for row in rows])
-
-
-def class_counts(rows):
-    """Counts the number of each type of example in a dataset."""
-    counts = {}  # a dictionary of label -> count.
-    for row in rows:
-        # in our dataset format, the label is always the last column
-        label = row[-1]
-        if label not in counts:
-            counts[label] = 0
-        counts[label] += 1
-    return counts
+        return headers, cities, data
 
 
-def is_numeric(value):
-    """Test if a value is numeric."""
-    return isinstance(value, int) or isinstance(value, float)
+# Returns the number of cities with each label
+def label_count(cities):
+    num_labels = {'yes': 0, 'no': 0}
+
+    for city in cities:
+        label = city[-1]  # label is the last attribute
+        num_labels[label] += 1
+
+    return num_labels
 
 
 class Question:
@@ -55,7 +49,7 @@ class Question:
         # Compare the feature value in an example to the
         # feature value in this question.
         val = example[self.column]
-        if is_numeric(val):
+        if isinstance(val, int) or isinstance(val, float):
             return val >= self.value
         else:
             return val == self.value
@@ -64,10 +58,10 @@ class Question:
         # This is just a helper method to print
         # the question in a readable format.
         condition = "=="
-        if is_numeric(self.value):
+        if isinstance(self.value, int) or isinstance(self.value, float):
             condition = ">="
         return "Is %s %s %s?" % (
-            header[self.column], condition, str(self.value))
+            headers[self.column], condition, str(self.value))
 
 
 def partition(rows, question):
@@ -85,12 +79,8 @@ def partition(rows, question):
 
 
 def gini(rows):
-    """Calculate the Gini Impurity for a list of rows.
-    There are a few different ways to do this, I thought this one was
-    the most concise. See:
-    https://en.wikipedia.org/wiki/Decision_tree_learning#Gini_impurity
-    """
-    counts = class_counts(rows)
+    """Calculate the Gini Impurity for a list of rows."""
+    counts = label_count(rows)
     impurity = 1
     for lbl in counts:
         prob_of_lbl = counts[lbl] / float(len(rows))
@@ -150,7 +140,7 @@ class Leaf:
     """
 
     def __init__(self, rows):
-        self.predictions = class_counts(rows)
+        self.predictions = label_count(rows)
 
 
 class Decision_Node:
@@ -203,28 +193,24 @@ def build_tree(rows):
 
 
 def print_tree(node, spacing=""):
-    """World's most elegant tree printing function."""
-
     # Base case: we've reached a leaf
     if isinstance(node, Leaf):
-        print (spacing + "Predict", node.predictions)
+        print(spacing + "Predict", node.predictions)
         return
 
     # Print the question at this node
-    print (spacing + str(node.question))
+    print(spacing + str(node.question))
 
     # Call this function recursively on the true branch
-    print (spacing + '--> True:')
+    print(spacing + '--> True:')
     print_tree(node.true_branch, spacing + "  ")
 
     # Call this function recursively on the false branch
-    print (spacing + '--> False:')
+    print(spacing + '--> False:')
     print_tree(node.false_branch, spacing + "  ")
 
 
 def classify(row, node):
-    """See the 'rules of recursion' above."""
-
     # Base case: we've reached a leaf
     if isinstance(node, Leaf):
         return node.predictions
@@ -239,7 +225,6 @@ def classify(row, node):
 
 
 def print_leaf(counts):
-    """A nicer way to print the predictions at a leaf."""
     total = sum(counts.values()) * 1.0
     probs = {}
     for lbl in counts.keys():
@@ -248,20 +233,15 @@ def print_leaf(counts):
 
 
 if __name__ == '__main__':
-    my_tree = build_tree(training_data)
-    print_tree(my_tree)
+    # Get data from training and test csv files
+    headers, training_cities, training_data = get_data_from_csv('trainingData.csv')
+    _, test_cities, test_data = get_data_from_csv('testData.csv')
 
-    with open('testData.csv', newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        test_cities = []
-        test_data = []
+    # Use the classifier to build a tree
+    tree = build_tree(training_data)
+    print_tree(tree)
 
-        for row in reader:
-            test_cities.append(row['city'])
-            test_data.append([row[header[0]], row[header[1]], row[header[2]],
-                              row[header[3]], int(row[header[4]]), int(row[header[5]]),
-                              float(row[header[6]]), row[header[7]]])
-
+    # Predict the test cases
     for i in range(0, len(test_data)):
         print("City: %s. Actual: %s. Predicted: %s" %
-               (test_cities[i], test_data[i][-1], print_leaf(classify(test_data[i], my_tree))))
+              (test_cities[i], test_data[i][-1], print_leaf(classify(test_data[i], tree))))
