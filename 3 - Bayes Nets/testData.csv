@@ -1,5 +1,6 @@
 city,state,region,good tech job market,near ocean,days/nights below 32 degrees farenheit,days above 90 degrees farenheit,violent crime rate,label
 Denver,CO,west,yes,no,157,31,6.75,yes
-Boston,MA,northeast,yes,yes,92,10,7.15,no
 San Jose,CA,west,yes,yes,40,16,3.36,yes
 Las Vegas,NV,west,no,no,8,131,9.32,no
+Oakland,CA,west,no,yes,0,2,14.52,no
+Cleveland,OH,midwest,no,no,104,9,15.83,no

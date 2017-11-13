@@ -21,12 +21,6 @@ def unique_vals(rows, col):
     """Find the unique values for a column in a dataset."""
     return set([row[col] for row in rows])
 
-#######
-# Demo:
-# unique_vals(training_data, 0)
-# unique_vals(training_data, 1)
-#######
-
 
 def class_counts(rows):
     """Counts the number of each type of example in a dataset."""
@@ -39,21 +33,10 @@ def class_counts(rows):
         counts[label] += 1
     return counts
 
-#######
-# Demo:
-# class_counts(training_data)
-#######
-
 
 def is_numeric(value):
     """Test if a value is numeric."""
     return isinstance(value, int) or isinstance(value, float)
-
-#######
-# Demo:
-# is_numeric(7)
-# is_numeric("Red")
-#######
 
 
 class Question:
@@ -86,18 +69,6 @@ class Question:
         return "Is %s %s %s?" % (
             header[self.column], condition, str(self.value))
 
-#######
-# Demo:
-# Let's write a question for a numeric attribute
-# Question(1, 3)
-# How about one for a categorical attribute
-# q = Question(0, 'Green')
-# Let's pick an example from the training set...
-# example = training_data[0]
-# ... and see if it matches the question
-# q.match(example)
-#######
-
 
 def partition(rows, question):
     """Partitions a dataset.
@@ -113,16 +84,6 @@ def partition(rows, question):
     return true_rows, false_rows
 
 
-#######
-# Demo:
-# Let's partition the training data based on whether rows are Red.
-# true_rows, false_rows = partition(training_data, Question(0, 'Red'))
-# This will contain all the 'Red' rows.
-# true_rows
-# This will contain everything else.
-# false_rows
-#######
-
 def gini(rows):
     """Calculate the Gini Impurity for a list of rows.
     There are a few different ways to do this, I thought this one was
@@ -137,33 +98,6 @@ def gini(rows):
     return impurity
 
 
-#######
-# Demo:
-# Let's look at some example to understand how Gini Impurity works.
-#
-# First, we'll look at a dataset with no mixing.
-# no_mixing = [['Apple'],
-#              ['Apple']]
-# this will return 0
-# gini(no_mixing)
-#
-# Now, we'll look at dataset with a 50:50 apples:oranges ratio
-# some_mixing = [['Apple'],
-#               ['Orange']]
-# this will return 0.5 - meaning, there's a 50% chance of misclassifying
-# a random example we draw from the dataset.
-# gini(some_mixing)
-#
-# Now, we'll look at a dataset with many different labels
-# lots_of_mixing = [['Apple'],
-#                  ['Orange'],
-#                  ['Grape'],
-#                  ['Grapefruit'],
-#                  ['Blueberry']]
-# This will return 0.8
-# gini(lots_of_mixing)
-#######
-
 def info_gain(left, right, current_uncertainty):
     """Information Gain.
     The uncertainty of the starting node, minus the weighted impurity of
@@ -171,40 +105,6 @@ def info_gain(left, right, current_uncertainty):
     """
     p = float(len(left)) / (len(left) + len(right))
     return current_uncertainty - p * gini(left) - (1 - p) * gini(right)
-
-#######
-# Demo:
-# Calculate the uncertainy of our training data.
-# current_uncertainty = gini(training_data)
-#
-# How much information do we gain by partioning on 'Green'?
-# true_rows, false_rows = partition(training_data, Question(0, 'Green'))
-# info_gain(true_rows, false_rows, current_uncertainty)
-#
-# What about if we partioned on 'Red' instead?
-# true_rows, false_rows = partition(training_data, Question(0,'Red'))
-# info_gain(true_rows, false_rows, current_uncertainty)
-#
-# It looks like we learned more using 'Red' (0.37), than 'Green' (0.14).
-# Why? Look at the different splits that result, and see which one
-# looks more 'unmixed' to you.
-# true_rows, false_rows = partition(training_data, Question(0,'Red'))
-#
-# Here, the true_rows contain only 'Grapes'.
-# true_rows
-#
-# And the false rows contain two types of fruit. Not too bad.
-# false_rows
-#
-# On the other hand, partitioning by Green doesn't help so much.
-# true_rows, false_rows = partition(training_data, Question(0,'Green'))
-#
-# We've isolated one apple in the true rows.
-# true_rows
-#
-# But, the false-rows are badly mixed up.
-# false_rows
-#######
 
 
 def find_best_split(rows):
@@ -242,13 +142,6 @@ def find_best_split(rows):
 
     return best_gain, best_question
 
-#######
-# Demo:
-# Find the best question to ask first for our toy dataset.
-# best_gain, best_question = find_best_split(training_data)
-# FYI: is color == Red is just as good. See the note in the code above
-# where I used '>='.
-#######
 
 class Leaf:
     """A Leaf node classifies data.
@@ -345,14 +238,6 @@ def classify(row, node):
         return classify(row, node.false_branch)
 
 
-#######
-# Demo:
-# The tree predicts the 1st row of our
-# training data is an apple with confidence 1.
-# my_tree = build_tree(training_data)
-# classify(training_data[0], my_tree)
-#######
-
 def print_leaf(counts):
     """A nicer way to print the predictions at a leaf."""
     total = sum(counts.values()) * 1.0
@@ -362,22 +247,8 @@ def print_leaf(counts):
     return probs
 
 
-#######
-# Demo:
-# Printing that a bit nicer
-# print_leaf(classify(training_data[0], my_tree))
-#######
-
-#######
-# Demo:
-# On the second example, the confidence is lower
-# print_leaf(classify(training_data[1], my_tree))
-#######
-
 if __name__ == '__main__':
-
     my_tree = build_tree(training_data)
-
     print_tree(my_tree)
 
     with open('testData.csv', newline='') as csvfile:

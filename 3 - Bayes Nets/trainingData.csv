@@ -7,18 +7,15 @@ Chicago,IL,midwest,yes,no,122,14,9.08,no
 Miami,FL,southeast,no,yes,0,80,10.2,no
 New Orleans,LA,southeast,no,yes,6,71,9.63,no
 St. Louis,MO,midwest,no,no,84,39,18.26,no
-Atlanta,GA,southeast,yes,no,36,36,11.77,no
 Nashville,TN,southeast,yes,no,120,40,11.26,no
-Memphis,TN,southeast,no,no,92,64,17.47,no
 Detroit,MI,midwest,yes,no,115,10,17.57,no
 Baltimore,MD,northeast,yes,yes,96,25,15.4,no
-Cleveland,OH,midwest,no,no,104,9,15.83,no
 "Washington, D.C.",N/A,southeast,yes,no,120,31,12.69,no
 Phoenix,AZ,southwest,no,no,0,171,5.93,no
 San Diego,CA,west,yes,yes,0,1,4.06,yes
 New York City,NY,northeast,yes,yes,66,12,5.78,no
 Salt Lake City,UT,west,yes,no,113,52,8.61,no
 San Antonio,TX,southwest,no,no,16,111,5.86,no
-Oakland,CA,west,no,yes,0,2,14.52,no
 Dallas,TX,southwest,yes,no,23,97,6.98,yes
 Austin,TX,southwest,yes,no,12,111,3.78,yes
+Boston,MA,northeast,yes,yes,92,10,7.15,no
