@@ -3,6 +3,7 @@
 # Problem 3.3
 
 import csv
+from math import log2
 
 
 # Returns the header array, cities array, and data array from the given csv file
@@ -12,97 +13,82 @@ def get_data_from_csv(filename):
         headers = reader.fieldnames[1:]
         cities = []
         data = []
-
         for row in reader:
             cities.append(row['city'])
             data.append([row[headers[0]], row[headers[1]], row[headers[2]],
                          row[headers[3]], int(row[headers[4]]), int(row[headers[5]]),
                          float(row[headers[6]]), row[headers[7]]])
-
         return headers, cities, data
 
 
 # Returns the number of cities with each label
 def label_count(cities):
     num_labels = {'yes': 0, 'no': 0}
-
     for city in cities:
         label = city[-1]  # label is the last attribute
         num_labels[label] += 1
-
     return num_labels
 
 
+# Used to query given examples
 class Question:
-    """A Question is used to partition a dataset.
-    This class just records a 'column number' (e.g., 0 for Color) and a
-    'column value' (e.g., Green). The 'match' method is used to compare
-    the feature value in an example to the feature value stored in the
-    question. See the demo below.
-    """
-
-    def __init__(self, column, value):
-        self.column = column
+    def __init__(self, attribute, value):
+        self.attribute = attribute
         self.value = value
 
-    def match(self, example):
-        # Compare the feature value in an example to the
-        # feature value in this question.
-        val = example[self.column]
-        if isinstance(val, int) or isinstance(val, float):
+    # Query if the given example is true for this question
+    def is_true(self, example):
+        val = example[self.attribute]
+        if isinstance(val, int) or isinstance(val, float):  # if number
             return val >= self.value
-        else:
+        else:  # if not a number
             return val == self.value
 
-    def __repr__(self):
-        # This is just a helper method to print
-        # the question in a readable format.
-        condition = "=="
+    def __str__(self):  # Used to print the question
         if isinstance(self.value, int) or isinstance(self.value, float):
-            condition = ">="
-        return "Is %s %s %s?" % (
-            headers[self.column], condition, str(self.value))
-
-
-def partition(rows, question):
-    """Partitions a dataset.
-    For each row in the dataset, check if it matches the question. If
-    so, add it to 'true rows', otherwise, add it to 'false rows'.
-    """
-    true_rows, false_rows = [], []
-    for row in rows:
-        if question.match(row):
-            true_rows.append(row)
+            return "Is %s >= %s?" % (headers[self.attribute], str(self.value))
         else:
-            false_rows.append(row)
-    return true_rows, false_rows
+            return "Is %s == %s?" % (headers[self.attribute], str(self.value))
 
 
-def gini(rows):
-    """Calculate the Gini Impurity for a list of rows."""
-    counts = label_count(rows)
-    impurity = 1
-    for lbl in counts:
-        prob_of_lbl = counts[lbl] / float(len(rows))
-        impurity -= prob_of_lbl**2
-    return impurity
+# Check if the question is true for each given city
+# Returns a list of the true and false cities
+def partition(cities, question):
+    true_cities = []
+    false_cities = []
+    for city in cities:
+        if question.is_true(city):
+            true_cities.append(city)
+        else:
+            false_cities.append(city)
+    return true_cities, false_cities
 
 
+# Returns the entropy
+def entropy(cities, weight):
+    counts = label_count(cities)
+    total = float(len(cities))
+    p_yes = (counts['yes'] / total) if counts['yes'] != 0 else 0
+    p_no = (counts['no'] / total) if counts['no'] != 0 else 0
+    new_yes = -p_yes * log2(p_yes) if p_yes != 0 else 0
+    new_no = -p_no * log2(p_no) if p_no != 0 else 0
+    return weight * (new_yes + new_no)
+
+
+# Returns the information gain from a query
 def info_gain(left, right, current_uncertainty):
-    """Information Gain.
-    The uncertainty of the starting node, minus the weighted impurity of
-    two child nodes.
-    """
-    p = float(len(left)) / (len(left) + len(right))
-    return current_uncertainty - p * gini(left) - (1 - p) * gini(right)
+    weight_left = float(len(left)) / (len(left) + len(right))
+    weight_right = float(len(right)) / (len(left) + len(right))
+    return current_uncertainty - (entropy(left, weight_left) + entropy(right, weight_right))
 
 
+# x
 def find_best_split(rows):
     """Find the best question to ask by iterating over every feature / value
     and calculating the information gain."""
     best_gain = 0  # keep track of the best information gain
     best_question = None  # keep train of the feature / value that produced it
-    current_uncertainty = gini(rows)
+    current_uncertainty = entropy(rows, 1)
     n_features = len(rows[0]) - 1  # number of columns
 
     for col in range(n_features):  # for each feature
@@ -133,6 +119,7 @@ def find_best_split(rows):
     return best_gain, best_question
 
 
+# x
 class Leaf:
     """A Leaf node classifies data.
     This holds a dictionary of class (e.g., "Apple") -> number of times
@@ -143,6 +130,7 @@ class Leaf:
         self.predictions = label_count(rows)
 
 
+# x
 class Decision_Node:
     """A Decision Node asks a question.
     This holds a reference to the question, and to the two child nodes.
@@ -157,6 +145,7 @@ class Decision_Node:
         self.false_branch = false_branch
 
 
+# x
 def build_tree(rows):
     """Builds the tree.
     Rules of recursion: 1) Believe that it works. 2) Start by checking
@@ -192,6 +181,7 @@ def build_tree(rows):
     return Decision_Node(question, true_branch, false_branch)
 
 
+# x
 def print_tree(node, spacing=""):
     # Base case: we've reached a leaf
     if isinstance(node, Leaf):
@@ -210,6 +200,7 @@ def print_tree(node, spacing=""):
     print_tree(node.false_branch, spacing + "  ")
 
 
+# x
 def classify(row, node):
     # Base case: we've reached a leaf
     if isinstance(node, Leaf):
@@ -218,12 +209,13 @@ def classify(row, node):
     # Decide whether to follow the true-branch or the false-branch.
     # Compare the feature / value stored in the node,
     # to the example we're considering.
-    if node.question.match(row):
+    if node.question.is_true(row):
         return classify(row, node.true_branch)
     else:
         return classify(row, node.false_branch)
 
 
+# x
 def print_leaf(counts):
     total = sum(counts.values()) * 1.0
     probs = {}
@@ -232,6 +224,7 @@ def print_leaf(counts):
     return probs
 
 
+# x
 if __name__ == '__main__':
     # Get data from training and test csv files
     headers, training_cities, training_data = get_data_from_csv('trainingData.csv')
