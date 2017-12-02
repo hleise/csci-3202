@@ -6,6 +6,41 @@ import csv
 from math import log2
 
 
+# Returns the headers, cities, and data from the given csv file
+def get_data_from_csv(filename):
+    with open(filename, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        headers = reader.fieldnames[1:]
+        cities = []
+        data = []
+        for row in reader:
+            cities.append(row['city'])
+            data.append([row[headers[0]], row[headers[1]], row[headers[2]],
+                         row[headers[3]], int(row[headers[4]]),
+                         int(row[headers[5]]), float(row[headers[6]]),
+                         row[headers[7]]])
+        return headers, cities, data
+
+
+# Returns the entropy
+def entropy(cities, weight):
+    counts = label_count(cities)
+    total = float(len(cities))
+    p_yes = counts['yes'] / total
+    p_no = counts['no'] / total
+    ent_yes = -p_yes * log2(p_yes) if p_yes != 0 else 0
+    ent_no = -p_no * log2(p_no) if p_no != 0 else 0
+    return weight * (ent_yes + ent_no)
+
+
+# Returns the information gain from a query
+def info_gain(left, right, current_uncertainty):
+    weight_left = float(len(left)) / (len(left) + len(right))
+    weight_right = float(len(right)) / (len(left) + len(right))
+    total_entropy = entropy(left, weight_left) + entropy(right, weight_right)
+    return current_uncertainty - total_entropy
+
+
 # Leaf node that represents yes or no
 class LeafNode:
     def __init__(self, cities):
@@ -50,22 +85,6 @@ def label_count(cities):
     return num_labels
 
 
-# Returns the headers, cities, and data from the given csv file
-def get_data_from_csv(filename):
-    with open(filename, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        headers = reader.fieldnames[1:]
-        cities = []
-        data = []
-        for row in reader:
-            cities.append(row['city'])
-            data.append([row[headers[0]], row[headers[1]], row[headers[2]],
-                         row[headers[3]], int(row[headers[4]]),
-                         int(row[headers[5]]), float(row[headers[6]]),
-                         row[headers[7]]])
-        return headers, cities, data
-
-
 # Check if the question is true for each given city
 # Returns a list of the true and false cities
 def partition(cities, question):
@@ -77,25 +96,6 @@ def partition(cities, question):
         else:
             false_cities.append(city)
     return true_cities, false_cities
-
-
-# Returns the entropy
-def entropy(cities, weight):
-    counts = label_count(cities)
-    total = float(len(cities))
-    p_yes = counts['yes'] / total
-    p_no = counts['no'] / total
-    ent_yes = -p_yes * log2(p_yes) if p_yes != 0 else 0
-    ent_no = -p_no * log2(p_no) if p_no != 0 else 0
-    return weight * (ent_yes + ent_no)
-
-
-# Returns the information gain from a query
-def info_gain(left, right, current_uncertainty):
-    weight_left = float(len(left)) / (len(left) + len(right))
-    weight_right = float(len(right)) / (len(left) + len(right))
-    total_entropy = entropy(left, weight_left) + entropy(right, weight_right)
-    return current_uncertainty - total_entropy
 
 
 # Return the best question and its information gain
