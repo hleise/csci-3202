@@ -4,6 +4,7 @@
 
 
 import random
+import math
 
 
 class Perceptron:
@@ -12,6 +13,7 @@ class Perceptron:
         self.correct = correct_func
         self.bias = bias
         self.weights = self.initialize_weights(self, num_inputs, -1, 1)
+        self.errors = 0
 
     @staticmethod
     def initialize_weights(self, num_weights, range_min, range_max):
@@ -20,26 +22,31 @@ class Perceptron:
             weights.append(random.uniform(range_min, range_max))
         return weights
 
+    @staticmethod
+    def prediction(self, output):
+        return True if output >= 0.5 else False
+
     def train(self, iterations, learning_rate):
         for i in range(iterations):
             if i % 250 == 0:  # print weights every 250 iterations
                 print(self.weights)
             inputs = [random.randint(0, 1) for _ in range(self.num_inputs)]
-            prediction = self.predict(inputs)
-            error = self.correct(inputs) - prediction
-            self.update(learning_rate, error, inputs)
+            output = self.sig_output(inputs)
+            if self.prediction(self, output) != get_correct(inputs):
+                self.errors += 1
+                derivative = output * (1.0 - output)
+                error = self.correct(inputs) - output
+                self.update(learning_rate, error, derivative, inputs)
 
-    def update(self, learning_rate, error, inputs):
-        for i in range(len(self.weights)):
-            self.weights[i] = self.weights[i] + (learning_rate * error) * inputs[i]
-
-    def predict(self, inputs):
+    def sig_output(self, inputs):
         weighted_sum = self.bias
         for i in range(len(inputs)):
             weighted_sum += inputs[i] * self.weights[i]
-        if weighted_sum - 1 > 0:
-            return 1
-        return 0
+        return 1.0 / (1.0 + math.exp(-weighted_sum))
+
+    def update(self, learning_rate, error, derivative, inputs):
+        for i in range(len(self.weights)):
+            self.weights[i] = self.weights[i] + (learning_rate * error * derivative * inputs[i])
 
 
 def get_correct(inputs):
@@ -58,10 +65,12 @@ def get_correct(inputs):
 
 
 def all_correct(perceptron):
-    for i in range(1):
-        for j in range(1):
-            for k in range(1):
-                prediction = perceptron.predict([i, j, k])
+    for i in range(2):
+        for j in range(2):
+            for k in range(2):
+                output = perceptron.sig_output([i, j, k])
+                prediction = perceptron.prediction(perceptron, output)
+                print(i, j, k, output)
                 if prediction != get_correct([i, j, k]):
                     return False
     return True
@@ -69,5 +78,6 @@ def all_correct(perceptron):
 
 if __name__ == '__main__':
     perceptron = Perceptron(3, get_correct, -1)
-    perceptron.train(8000, 0.5)
+    perceptron.train(8000, 1.0)
     print(all_correct(perceptron))
+    print(perceptron.errors)
