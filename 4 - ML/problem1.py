@@ -106,7 +106,6 @@ class Perceptron:
             self.weights[i] = self.weights[i] + \
                               (learning_rate * error * derivative * inputs[i])
 
-
 def get_correct(inputs):
     """
     Return the 'and' function of inputs 1 and 3.
@@ -135,7 +134,6 @@ def all_correct(perceptron):
             for k in range(2):
                 output = perceptron.sig_output([i, j, k])
                 prediction = perceptron.prediction(perceptron, output)
-                print(i, j, k, output)
                 if prediction != get_correct([i, j, k]):
                     return False
     return True
@@ -144,3 +142,4 @@ def all_correct(perceptron):
 if __name__ == '__main__':
     perceptron = Perceptron(3, get_correct, -1)
     perceptron.train(8000, 1.0)
+    print(all_correct(perceptron))
