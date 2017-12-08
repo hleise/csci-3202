@@ -121,12 +121,12 @@ def get_correct(inputs):
 
 def all_correct(perceptron):
     """
-    Check if all possible 3 input combinations return the expected values.
+    Check if all possible 3 input combinations return the expected outputs.
 
     Args:
         perceptron (Perceptron): perceptron class instance
     Returns:
-        bool: True if all input possibilities return the expected values,
+        bool: True if all input possibilities return the expected outputs,
             False otherwise.
     """
     for i in range(2):
