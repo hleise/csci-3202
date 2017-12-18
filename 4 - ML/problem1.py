@@ -46,7 +46,7 @@ class Perceptron:
     def prediction(self, output):
         """
         Takes a sigmoid output value and returns its corresponding
-        boolean value.
+        boolean value for an activation threshold of 0.5.
 
         Args:
             output (float): sigmoid activation value
@@ -54,7 +54,7 @@ class Perceptron:
             bool: True if output >= 0.5
                 False otherwise
         """
-        return True if output >= 0.5 else False
+        return output >= 0.5
 
     def train(self, iterations, learning_rate):
         """
@@ -106,6 +106,7 @@ class Perceptron:
             self.weights[i] = self.weights[i] + \
                               (learning_rate * error * derivative * inputs[i])
 
+
 def get_correct(inputs):
     """
     Return the 'and' function of inputs 1 and 3.
@@ -134,6 +135,7 @@ def all_correct(perceptron):
             for k in range(2):
                 output = perceptron.sig_output([i, j, k])
                 prediction = perceptron.prediction(perceptron, output)
+                print(i, j, k, output)
                 if prediction != get_correct([i, j, k]):
                     return False
     return True
@@ -141,5 +143,5 @@ def all_correct(perceptron):
 
 if __name__ == '__main__':
     perceptron = Perceptron(3, get_correct, -1)
-    perceptron.train(8000, 1.0)
+    perceptron.train(8000, 0.1)
     print(all_correct(perceptron))
